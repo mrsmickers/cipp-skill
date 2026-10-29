@@ -12,6 +12,9 @@ Before using the CIPP API, you must:
 ### Step 1: Get Access Token
 
 ```bash
+# NOTE (verified v11.2.1): if every endpoint returns 403 "Access to this CIPP API endpoint is not
+# allowed, the API Client does not have the required permission", check the API client's allowed
+# IP range first. The message reads like a role problem but is also what an IP block returns.
 curl -s -X POST "https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token" \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "client_id=${CLIENT_ID}" \

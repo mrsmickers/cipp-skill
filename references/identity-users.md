@@ -285,6 +285,16 @@ POST /api/EditTenantOffboardingDefaults
 
 ## BEC (Business Email Compromise) [API + UI]
 
+### Phishing triage order (worked on v11.2.1)
+1. `ListMessageTrace` with the sender (or `*@domain`) to get every recipient and delivery time.
+2. `GET /api/ListSignIns?tenantFilter={tenant}&Days=7`: compare each user's IPs with the office IP; look for success (`status.errorCode` 0) or 50140 (password accepted) from new countries or hosting ranges shortly after delivery. `authenticationRequirement` shows whether MFA was asked.
+3. For each suspect: `ListUserMailboxRules`, and `ListMessageTrace` with `sender` = the user for outbound mail.
+4. Remediate: `POST /api/ExecRevokeSessions {"tenantFilter","ID","Username"}`, disable rules with `ExecSetMailboxRule`, then reset the password.
+
+Gotchas:
+- AD-synced users: `ExecDisableUser {"tenantFilter","ID","Enable": false}` fails with "AD Sync enabled". Block and reset in on-prem AD, then delta sync. Revoking sessions and rule changes still work.
+- `ExecBECRemediate` and `ExecBECCheck` can run past the 45 s Static Web App proxy limit when called through the frontend, returning "Backend call failure" with nothing changed. Run the steps one by one and check state after.
+
 ```
 # Check for compromise indicators
 GET /api/ExecBECCheck?TenantFilter={tenant}&UserID={userId}

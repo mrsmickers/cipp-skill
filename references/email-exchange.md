@@ -546,6 +546,15 @@ POST /api/ListMessageTrace
 }
 ```
 
+Verified on v11.2.1: the body that works is lower-case `{"tenantFilter": "...", "days": 5, "sender": "user@contoso.com"}`. `sender` takes wildcards (`*@supplier.com`) to see every address a domain sent. Rows carry `MessageTraceId, MessageId, Status, Subject, RecipientAddress, SenderAddress, Received, Size, FromIP, ToIP`. Passing `traceDetail` with a `MessageTraceId` returned HTTP 500.
+
+### Inbox rules for one user (v11.2.1)
+```
+GET  /api/ListUserMailboxRules?tenantFilter={tenant}&userId={guid}&userEmail={upn}
+POST /api/ExecSetMailboxRule   {"tenantFilter","ruleId","ruleName","userPrincipalName","Disable": true}
+```
+`ruleId` is the rule's `Identity` from the list call. Disabling keeps the rule as evidence; prefer it to deleting during an incident.
+
 ### Mail Test
 ```
 GET /api/ExecMailTest?TenantFilter={tenant}&Email={email}
