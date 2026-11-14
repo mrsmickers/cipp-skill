@@ -149,6 +149,8 @@ CIPP's REST API works with any HTTP client. For n8n workflows:
 3. All CIPP endpoints are available — just call `{CIPP_URL}/api/{endpoint}`
 4. Use the TenantFilter parameter to target specific tenants
 
+For an n8n Graph credential that must read one mailbox, CIPP is not the route: see "App Access to One Mailbox" in `references/email-exchange.md`.
+
 ## "Can CIPP Do X?" Decision Tree
 
 1. Check the relevant reference file for API endpoints

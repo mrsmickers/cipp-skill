@@ -60,6 +60,23 @@ POST /api/ExecEditMailboxPermissions
 POST /api/ExecModifyMBPerms
 ```
 
+### App Access to One Mailbox (Exchange RBAC for Applications) [PowerShell only]
+
+CIPP has no endpoint for this. Use it when an app, such as an n8n Graph credential, must read or move mail in one mailbox. It replaces a tenant-wide Mail.Read or Mail.ReadWrite grant in Entra.
+
+```powershell
+Connect-ExchangeOnline -UserPrincipalName <exchange admin>
+New-ServicePrincipal -AppId <app id> -ObjectId <enterprise app object id> -DisplayName <name>
+New-ManagementScope -Name <scope> -RecipientRestrictionFilter "PrimarySmtpAddress -eq '<mailbox>'"
+New-ManagementRoleAssignment -Name <name> -App <object id> -Role 'Application Mail.ReadWrite' -CustomResourceScope <scope>
+Test-ServicePrincipalAuthorization -Identity <object id> -Resource <mailbox>        # expect InScope True
+Test-ServicePrincipalAuthorization -Identity <object id> -Resource <other mailbox>  # expect InScope False
+```
+
+- Use 'Application Mail.Read' if the app only reads. Moving a message (`POST /users/{mailbox}/messages/{id}/move`) needs Mail.ReadWrite.
+- `Test-ServicePrincipalAuthorization` shows True at once, but Graph kept returning 403 for 105 minutes after the Mail.ReadWrite role went on (Ingenio tenant, 27-28 Oct 2026). Allow up to two hours before calling a grant broken.
+- Ingenio's own tenant: Simon runs these scripts himself (`pwsh -File ...`, signing in as ceadmin_ss). The auto-mode classifier blocks Claude from getting an Exchange admin token for him. Proven example on Simon's Mac: `~/Projects/general/working/hello-mailbox-leads/grant-hello-read.ps1`, then `grant-hello-readwrite.ps1`.
+
 ### Email Forwarding [API]
 
 ```
